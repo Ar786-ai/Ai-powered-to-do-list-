@@ -1,0 +1,470 @@
+from IPython.display import HTML, display
+
+# Complete HTML, CSS, and JavaScript for AI-Powered To-Do List with Quick Add Feature
+html_code = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered To-Do List</title>
+    <style>
+        :root {
+            --primary-color: #4e54c8;
+            --secondary-color: #8f94fb;
+            --text-color: #333;
+            --bg-color: #f9f9f9;
+            --card-bg: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            padding: 2rem;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+        }
+
+        .app-title {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-row {
+            margin-bottom: 20px;
+        }
+
+        input[type="text"], input[type="password"], input[type="date"], select {
+            padding: 12px 20px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1.2rem;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"]:focus, input[type="password"]:focus, input[type="date"]:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(78, 84, 200, 0.1);
+        }
+
+        .btn {
+            padding: 12px 20px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .link {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .link a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .tasks-list {
+            list-style: none;
+            margin: 1rem 0;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .task-item:last-child {
+            border-bottom: none;
+        }
+
+        .task-checkbox {
+            margin-right: 12px;
+        }
+
+        .task-text {
+            flex: 1;
+            font-size: 1.2rem;
+        }
+
+        .completed {
+            text-decoration: line-through;
+            color: #aaa;
+        }
+
+        .progress-section {
+            padding: 1.5rem;
+            border-top: 1px solid #eee;
+        }
+
+        .progress-bar-container {
+            height: 15px;
+            background-color: #eee;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            border-radius: 6px;
+            transition: width 0.4s ease;
+        }
+
+        .progress-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.2rem;
+        }
+
+        .motivation-section {
+            margin-top: 20px;
+            padding: 1.5rem;
+            background: #51cf66;  /* Success color */
+            color: white;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .suggestions-section {
+            margin-top: 20px;
+        }
+
+        .suggestion {
+            background: #e7f3ff;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .suggestion:hover {
+            background: #d4e6ff;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container" id="authContainer">
+        <h1 class="app-title">Welcome Back!</h1>
+        <div class="form-row">
+            <input type="text" id="usernameInput" placeholder="Username" />
+        </div>
+        <div class="form-row">
+            <input type="password" id="passwordInput" placeholder="Password" />
+        </div>
+        <button class="btn" id="loginBtn">Login</button>
+        <div class="link">
+            Don't have an account? <a href="#" id="showRegister">Register</a>
+        </div>
+    </div>
+
+    <div class="container" id="registerContainer" style="display:none;">
+        <h1 class="app-title">Register</h1>
+        <div class="form-row">
+            <input type="text" id="newUsernameInput" placeholder="Username" />
+        </div>
+        <div class="form-row">
+            <input type="password" id="newPasswordInput" placeholder="Password" />
+        </div>
+        <button class="btn" id="registerBtn">Register</button>
+        <div class="link">
+            Already have an account? <a href="#" id="showLogin">Login</a>
+        </div>
+    </div>
+
+    <div class="container" id="mainApp" style="display:none;">
+        <h1 class="app-title">AI-Powered To-Do List</h1>
+        <div class="input-section">
+            <div class="form-row">
+                <input type="text" id="taskInput" placeholder="Add a new task" />
+                <input type="date" id="dueDateInput" class="due-date-input" />
+                <select id="prioritySelect" class="priority-select">
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+                <button class="btn" id="addTaskBtn">Add Task</button>
+            </div>
+            <div class="filter-section">
+                <input type="text" id="filterInput" placeholder="Filter tasks..." />
+            </div>
+        </div>
+        <ul class="tasks-list" id="tasksList"></ul>
+        <div class="progress-section">
+            <h2>Progress Tracking</h2>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar" style="width: 0%;"></div>
+            </div>
+            <div class="progress-stats">
+                <span id="totalTasks">Total Tasks: 0</span>
+                <span id="completedTasks">Completed Tasks: 0</span>
+            </div>
+        </div>
+        <div class="motivation-section" id="motivationSection">
+            <h3 id="motivationMessage"></h3>
+        </div>
+        <div class="suggestions-section" id="suggestionsSection">
+            <h2>Suggested Tasks</h2>
+            <div id="suggestionsList"></div>
+        </div>
+    </div>
+
+    <script>
+        const addTaskBtn = document.getElementById('addTaskBtn');
+        const loginBtn = document.getElementById('loginBtn');
+        const registerBtn = document.getElementById('registerBtn');
+        const taskInput = document.getElementById('taskInput');
+        const dueDateInput = document.getElementById('dueDateInput');
+        const prioritySelect = document.getElementById('prioritySelect');
+        const tasksList = document.getElementById('tasksList');
+        const filterInput = document.getElementById('filterInput');
+        const progressBar = document.getElementById('progressBar');
+        const totalTasksSpan = document.getElementById('totalTasks');
+        const completedTasksSpan = document.getElementById('completedTasks');
+        const motivationMessage = document.getElementById('motivationMessage');
+        const authContainer = document.getElementById('authContainer');
+        const registerContainer = document.getElementById('registerContainer');
+        const mainApp = document.getElementById('mainApp');
+        const showRegister = document.getElementById('showRegister');
+        const showLogin = document.getElementById('showLogin');
+        const suggestionsList = document.getElementById('suggestionsList');
+
+        let tasks = [];
+        let users = {};
+
+        // Motivational messages
+        const motivationalMessages = [
+            "Keep pushing towards your goals!",
+            "You can do anything you set your mind to!",
+            "Believe in yourself!",
+            "Every day is a new beginning.",
+            "Stay positive, work hard, make it happen!",
+            "Motivation is what gets you started. Habit is what keeps you going."
+        ];
+
+        // Suggested tasks based on keywords
+        const taskSuggestions = {
+            "study": ["Review notes", "Read chapter 2", "Work on assignment"],
+            "exercise": ["Go for a run", "Join a yoga class", "Lift weights"],
+            "work": ["Attend meeting", "Reply to emails", "Update project plan"],
+            "home": ["Clean the kitchen", "Do laundry", "Grocery shopping"],
+            "social": ["Call a friend", "Plan a gathering", "Watch a movie together"]
+        };
+
+        // Quick add commands
+        const quickCommands = {
+            "quick assign": "Assign project to team",
+            "quick meeting": "Schedule a project meeting",
+            "quick call": "Call the client for feedback"
+        };
+
+        function renderMotivationMessage() {
+            const randomIndex = Math.floor(Math.random() * motivationalMessages.length);
+            motivationMessage.innerText = motivationalMessages[randomIndex];
+        }
+
+        function renderSuggestions() {
+            suggestionsList.innerHTML = '';
+            const inputValue = taskInput.value.toLowerCase();
+            
+            // Keyword matching for task suggestions
+            for (const keyword in taskSuggestions) {
+                if (inputValue.includes(keyword)) {
+                    taskSuggestions[keyword].forEach(task => {
+                        const suggestionDiv = document.createElement('div');
+                        suggestionDiv.className = 'suggestion';
+                        suggestionDiv.innerText = task;
+                        suggestionDiv.onclick = () => {
+                            taskInput.value = suggestionDiv.innerText; // Auto-fill task input with suggestion
+                        };
+                        suggestionsList.appendChild(suggestionDiv);
+                    });
+                }
+            }
+            
+            // Suggest quick commands
+            for (const command in quickCommands) {
+                if (inputValue.includes(command)) {
+                    const suggestionDiv = document.createElement('div');
+                    suggestionDiv.className = 'suggestion';
+                    suggestionDiv.innerText = quickCommands[command];
+                    suggestionDiv.onclick = () => {
+                        taskInput.value = suggestionDiv.innerText; // Auto-fill with quick command
+                    };
+                    suggestionsList.appendChild(suggestionDiv);
+                }
+            }
+        }
+
+        function sortTasks() {
+            tasks.sort((a, b) => {
+                const priorityOrder = { high: 3, medium: 2, low: 1 };
+                return priorityOrder[b.priority] - priorityOrder[a.priority];
+            });
+        }
+
+        function renderTasks(filter = '') {
+            sortTasks();  // Sort tasks by priority before rendering
+            tasksList.innerHTML = '';
+            const filteredTasks = tasks.filter(task => 
+                task.text.toLowerCase().includes(filter.toLowerCase())
+            );
+
+            filteredTasks.forEach((task, index) => {
+                const taskItem = document.createElement('li');
+                taskItem.classList.add('task-item');
+
+                const taskCheckbox = document.createElement('input');
+                taskCheckbox.type = 'checkbox';
+                taskCheckbox.classList.add('task-checkbox');
+                taskCheckbox.checked = task.completed;
+                taskCheckbox.addEventListener('change', () => {
+                    task.completed = !task.completed;
+                    updateProgress();
+                    renderTasks(filter);
+                });
+
+                const taskText = document.createElement('span');
+                taskText.classList.add('task-text');
+                if (task.completed) taskText.classList.add('completed');
+                taskText.innerText = task.text;
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.classList.add('task-action-btn');
+                deleteBtn.innerText = 'Delete';
+                deleteBtn.addEventListener('click', () => {
+                    tasks.splice(index, 1);
+                    updateProgress();
+                    renderTasks(filter);
+                });
+
+                taskItem.appendChild(taskCheckbox);
+                taskItem.appendChild(taskText);
+                taskItem.appendChild(deleteBtn);
+                tasksList.appendChild(taskItem);
+            });
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const totalTasks = tasks.length;
+            const completedTasks = tasks.filter(task => task.completed).length;
+            const progressPercentage = totalTasks ? ((completedTasks / totalTasks) * 100) : 0;
+
+            totalTasksSpan.textContent = `Total Tasks: ${totalTasks}`;
+            completedTasksSpan.textContent = `Completed Tasks: ${completedTasks}`;
+            progressBar.style.width = `${progressPercentage}%`;
+        }
+
+        function resetAuthInputs() {
+            document.getElementById('usernameInput').value = '';
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('newUsernameInput').value = '';
+            document.getElementById('newPasswordInput').value = '';
+        }
+
+        loginBtn.addEventListener('click', () => {
+            const username = document.getElementById('usernameInput').value;
+            const password = document.getElementById('passwordInput').value;
+            if (users[username] && users[username] === password) {
+                authContainer.style.display = 'none';
+                mainApp.style.display = 'block';
+                resetAuthInputs();
+                renderMotivationMessage(); // Show a motivational message on load
+            } else {
+                alert('Invalid username or password!');
+            }
+        });
+
+        registerBtn.addEventListener('click', () => {
+            const newUsername = document.getElementById('newUsernameInput').value;
+            const newPassword = document.getElementById('newPasswordInput').value;
+
+            if (newUsername && newPassword) {
+                users[newUsername] = newPassword;
+                alert('Registration successful! You can now login.');
+                registerContainer.style.display = 'none';
+                authContainer.style.display = 'block';
+                resetAuthInputs();
+            } else {
+                alert('Please fill in both fields.');
+            }
+        });
+
+        showRegister.addEventListener('click', () => {
+            authContainer.style.display = 'none';
+            registerContainer.style.display = 'block';
+            resetAuthInputs();
+        });
+
+        showLogin.addEventListener('click', () => {
+            registerContainer.style.display = 'none';
+            authContainer.style.display = 'block';
+            resetAuthInputs();
+        });
+
+        addTaskBtn.addEventListener('click', () => {
+            const taskText = taskInput.value.trim();
+            const dueDate = dueDateInput.value;
+            const priority = prioritySelect.value;
+
+            if (taskText && dueDate) {
+                tasks.push({ text: taskText, dueDate: dueDate, priority: priority, completed: false });
+                taskInput.value = '';
+                dueDateInput.value = '';
+                renderTasks();
+                renderSuggestions(); // Render suggestions based on new input
+            }
+        });
+
+        filterInput.addEventListener('input', () => {
+            renderTasks(filterInput.value);
+        });
+
+        taskInput.addEventListener('input', renderSuggestions); // Show suggestions as user types
+
+        // Show the motivation message on load
+        document.addEventListener('DOMContentLoaded', renderMotivationMessage);
+    </script>
+</body>
+</html>
+"""
+
+# Display the HTML in Google Colab
+display(HTML(html_code))
